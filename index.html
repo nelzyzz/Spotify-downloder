@@ -97,6 +97,15 @@
             padding: 15px;
             border-radius: 8px;
             background-color: rgba(238, 238, 238, 0.1);
+            opacity: 0; /* Start hidden for fade effect */
+            transition: opacity 0.5s ease; /* Transition for fade effect */
+        }
+
+        #randomFact {
+            margin-top: 20px;
+            display: none; /* Initially hidden */
+            opacity: 0; /* Start hidden for fade effect */
+            transition: opacity 0.5s ease; /* Transition for fade effect */
         }
 
         .result-container p, .result-container img {
@@ -127,17 +136,10 @@
             font-size: 14px;
         }
 
-        .date-time {
+        .footer {
             margin-top: 20px;
             font-size: 14px;
             color: var(--text-color);
-        }
-
-        .created-by {
-            margin-top: 10px;
-            font-size: 14px;
-            color: var(--text-color);
-            font-weight: 600;
         }
 
         @keyframes fadeIn {
@@ -149,18 +151,31 @@
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes colorAnimation {
+            0% { color: #00adb5; }
+            50% { color: #ff2e63; }
+            100% { color: #00adb5; }
+        }
+
+        .created-by {
+            animation: colorAnimation 2s infinite;
+        }
     </style>
 </head>
 <body>
     <div id="particles-js"></div>
 
     <div class="wrapper-container">
-        <h1>Spotify Downloader</h1>
+        <h1>Spotify Downloader With Random facts</h1>
         <input type="text" id="trackQuery" placeholder="Enter Spotify Track URL">
-        <button class="download-button" onclick="fetchTrack()">Download</button>
+        <button class="download-button" id="downloadButton" onclick="fetchTrack()">Download</button>
 
         <div class="loading" id="loading">Loading...</div>
         <div class="notification" id="notification"></div>
+
+        <!-- Random Fact Display -->
+        <div id="randomFact"></div>
 
         <div class="result-container" id="result">
             <img id="trackImage" src="" alt="Track Image" width="200">
@@ -171,8 +186,10 @@
             <p><strong>Download:</strong> <a href="#" id="downloadLink" target="_blank">Click Here</a></p>
         </div>
 
-        <div class="date-time" id="dateTime"></div>
-        <div class="created-by">Created by Sunnel John Rebano</div>
+        <div class="footer">
+            <p id="date-time"></p>
+            <p class="created-by">Created by Sunnel John Rebano</p>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
@@ -206,7 +223,7 @@
             }
 
             const apiUrl = `https://joshweb.click/api/spotify2?q=${encodeURIComponent(trackQuery)}`;
-            document.getElementById('loading').style.display = 'block'; // Show loading
+            document.getElementById('loading').style.display = 'block';
             document.getElementById('result').style.display = 'none';
 
             try {
@@ -215,47 +232,70 @@
 
                 if (data.error) {
                     notification.innerText = data.error;
-                    document.getElementById('loading').style.display = 'none'; // Hide loading
+                    document.getElementById('loading').style.display = 'none';
                     return;
                 }
 
                 const result = data.result;
 
-                // Update the result fields
                 document.getElementById('title').innerText = result.title;
                 document.getElementById('type').innerText = result.type;
                 document.getElementById('artist').innerText = result.artist;
                 document.getElementById('duration').innerText = Math.floor(result.duration / 1000);
                 document.getElementById('trackImage').src = result.image;
-                document.getElementById('downloadLink').href = result.download_url;
+                document.getElementById('downloadLink').href = result.download;
 
-                document.getElementById('loading').style.display = 'none'; // Hide loading
-                document.getElementById('result').style.display = 'block';
-            } catch (error) {
-                document.getElementById('loading').style.display = 'none'; // Hide loading
-                notification.innerText = 'Error fetching track data. Please try again.';
-            }
-        }
+                // Fade in the result container
+                const resultContainer = document.getElementById('result');
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.style.opacity = 1; // Fade in
+                }, 50); // Slight delay for smoother effect
 
-        function updateDateTime() {
-            const dateTimeElement = document.getElementById('dateTime');
-            const options = { timeZone: 'Asia/Manila', 
-                             year: 'numeric', 
-                             month: 'long', 
-                             day: 'numeric', 
-                             weekday: 'long', 
-                             hour: 'numeric', 
-                             minute: 'numeric', 
-                             second: 'numeric', 
-                             hour12: true };
-            const now = new Date().toLocaleString('en-US', options);
-            dateTimeElement.innerText = now;
-            }
+                // Fetch a random fun fact
+                fetchRandomFact();
+                } catch (error) {
+                notification.innerText = 'Error fetching data. Please try again.';
+                } finally {
+                document.getElementById('loading').style.display = 'none';
+                }
+                }
 
-            // Update the date and time every second
-            setInterval(updateDateTime, 1000);
-            updateDateTime(); // Initial call to display immediately
-            </script>
-            </body>
-            </html>
+                async function fetchRandomFact() {
+                const randomFactUrl = 'https://uselessfacts.jsph.pl/api/v2/facts/random';
+                try {
+                const response = await fetch(randomFactUrl);
+                const data = await response.json();
+
+                const randomFactElement = document.getElementById('randomFact');
+                randomFactElement.innerText = data.text;
+                randomFactElement.style.display = 'block';
+
+                // Fade in the random fact
+                setTimeout(() => {
+                    randomFactElement.style.opacity = 1.0; // Fade in
+                }, 90); // Slight delay for smoother effect
+                } catch (error) {
+                console.error('Error fetching random fact:', error);
+                }
+                }
+
+                // Handle button fade out
+                const downloadButton = document.getElementById('downloadButton');
+                downloadButton.addEventListener('click', () => {
+                downloadButton.style.opacity = 0.5; // Fade out button
+                setTimeout(() => {
+                downloadButton.style.opacity = 1; // Fade back in
+            }, 500); // Duration of fade out
+        });
+                function updateDateTime() {
+                const dateTimeElement = document.getElementById('date-time');
+                const now = new Date();
+                dateTimeElement.innerText = now.toLocaleString();
+                }
+
+                setInterval(updateDateTime, 1000);
+                </script>
+                </body>
+                </html>
 
