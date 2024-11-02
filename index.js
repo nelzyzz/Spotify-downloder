@@ -10,18 +10,8 @@ particlesJS('particles-js', {
     },
     interactivity: {
         detect_on: "canvas",
-        events: {
-            onhover: { enable: true, mode: "repulse" },
-            onclick: { enable: true, mode: "push" },
-            resize: true
-        },
-        modes: {
-            grab: { distance: 400, line_linked: { opacity: 1 } },
-            bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
-            repulse: { distance: 200, duration: 0.4 },
-            push: { particles_nb: 4 },
-            remove: { particles_nb: 2 }
-        }
+        events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+        modes: { grab: { distance: 400, line_linked: { opacity: 1 } }, bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 }, repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 } }
     },
     retina_detect: true
 });
@@ -35,15 +25,6 @@ async function fetchTrack() {
         notification.innerText = 'Please enter a Spotify track URL.';
         return;
     }
-
-    function updateDateTime() {
-    const dateTimeElement = document.getElementById('date-time');
-    const now = new Date();
-    dateTimeElement.innerText = now.toLocaleString(); // Formats the current date and time
-}
-
-setInterval(updateDateTime, 1000); // Calls the function every second
-
 
     const apiUrl = `https://joshweb.click/api/spotify2?q=${encodeURIComponent(trackQuery)}`;
     document.getElementById('loading').style.display = 'block';
@@ -71,38 +52,51 @@ setInterval(updateDateTime, 1000); // Calls the function every second
         // Fade in the result container
         const resultContainer = document.getElementById('result');
         resultContainer.style.display = 'block';
-        setTimeout(() => {            resultContainer.style.opacity = 1; // Fade in effect
+        setTimeout(() => {
+            resultContainer.style.opacity = 1; // Fade in
+        }, 50); // Slight delay for smoother effect
 
-        }, 100); // Slight delay for fade effect
-
-        // Show random fact
-        showRandomFact();
-
+        // Fetch a random fun fact
+        fetchRandomFact();
     } catch (error) {
-        console.error('Error fetching the track:', error);
-        notification.innerText = 'There was an error fetching the track. Please try again.';
+        notification.innerText = 'Error fetching data. Please try again.';
     } finally {
         document.getElementById('loading').style.display = 'none';
     }
 }
 
-// Function to show a random fact
-async function showRandomFact() {
-    const randomFact = document.getElementById('randomFact');
-    randomFact.style.display = 'block';
+async function fetchRandomFact() {
+    const randomFactUrl = 'https://uselessfacts.jsph.pl/api/v2/facts/random';
     try {
-        const factResponse = await fetch('https://uselessfacts.jsph.pl/random.json?language=en');
-        const factData = await factResponse.json();
-        randomFact.innerText = factData.text;
+        const response = await fetch(randomFactUrl);
+        const data = await response.json();
+
+        const randomFactElement = document.getElementById('randomFact');
+        randomFactElement.innerText = data.text;
+        randomFactElement.style.display = 'block';
 
         // Fade in the random fact
         setTimeout(() => {
-            randomFact.style.opacity = 1; // Fade in effect
-        }, 100); // Slight delay for fade effect
-
+            randomFactElement.style.opacity = 1.0; // Fade in
+        }, 90); // Slight delay for smoother effect
     } catch (error) {
         console.error('Error fetching random fact:', error);
-        randomFact.innerText = 'Could not fetch a random fact.';
     }
 }
 
+// Handle button fade out
+const downloadButton = document.getElementById('downloadButton');
+downloadButton.addEventListener('click', () => {
+    downloadButton.style.opacity = 0.5; // Fade out button
+    setTimeout(() => {
+        downloadButton.style.opacity = 1; // Fade back in
+    }, 500); // Duration of fade out
+});
+
+function updateDateTime() {
+    const dateTimeElement = document.getElementById('date-time');
+    const now = new Date();
+    dateTimeElement.innerText = now.toLocaleString();
+}
+
+setInterval(updateDateTime, 1000);
